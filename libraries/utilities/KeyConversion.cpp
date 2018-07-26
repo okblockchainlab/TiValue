@@ -1,6 +1,7 @@
 #include <utilities/KeyConversion.hpp>
 #include <fc/crypto/base58.hpp>
 #include <fc/variant.hpp>
+#include <sstream>
 
 namespace TiValue {
     namespace utilities {
@@ -17,6 +18,21 @@ namespace TiValue {
             digest = fc::sha256::hash(digest);
             memcpy(data + size_of_data_to_hash, (char*)&digest, size_of_hash_bytes);
             return fc::to_base58(data, sizeof(data));
+        }
+
+	    std::string key_to_hex(const fc::ecc::private_key& key)
+        {
+            fc::sha256 secret = key.get_secret();
+	        std::string hex_str;
+            const size_t size_of_data_to_hex = sizeof(secret);
+            unsigned char data[size_of_data_to_hex];
+            memcpy(&data[0], (char*)&secret, sizeof(secret));
+            for (int i = 0; i < size_of_data_to_hex; i++) {
+                char tmp[10];
+                sprintf(tmp, "%x", data[i]);
+                hex_str += tmp;
+            }
+            return hex_str;
         }
 
         /**

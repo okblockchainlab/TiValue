@@ -15,6 +15,7 @@
 #include <fc/thread/non_preemptable_scope_check.hpp>
 #include "cli/locale.hpp"
 
+
 namespace TiValue {
     namespace client {
         namespace detail {
@@ -578,6 +579,46 @@ namespace TiValue {
 					_wallet->cache_transaction(entry);
 					network_broadcast_transaction(entry.trx);
 				}
+                return entry;
+
+            }
+
+            WalletTransactionEntry detail::ClientImpl::okcoin_wallet_transfer_to_address(
+                    const string& amount_to_transfer,
+                    const string& asset_symbol,
+                    const string& from_address,
+                    const string& to_address,
+                    const string& memo_message,
+                    const VoteStrategy& strategy,
+                    bool broadcast
+            )
+            {
+                // set limit in  sandbox state
+                if (_chain_db->get_is_in_sandbox())
+                    FC_THROW_EXCEPTION(sandbox_command_forbidden, "in sandbox, this command is forbidden, you cannot call it!");
+
+                string strToAccount;
+                string strSubAccount;
+                _wallet->accountsplit(to_address, strToAccount, strSubAccount);
+                Address effective_address;
+                if (Address::is_valid(strToAccount))
+                    effective_address = Address(strToAccount);
+                else
+                    effective_address = Address(PublicKeyType(strToAccount));
+                auto entry = _wallet->okcoin_transfer_asset_to_address(amount_to_transfer,
+                                                                asset_symbol,
+                                                                from_address,
+                                                                effective_address,
+                                                                memo_message,
+                                                                strategy,
+                                                                true,
+                                                                strSubAccount);
+
+                if (broadcast)
+                {
+                    _wallet->cache_transaction(entry);
+                    network_broadcast_transaction(entry.trx);
+                }
                 return entry;
 
             }
@@ -1183,7 +1224,7 @@ namespace TiValue {
                         ASSERT_TASK_NOT_PREEMPTED(); // make sure no cancel gets swallowed by catch(...)
                         //If input is an address...
 
-                        return utilities::key_to_wif(_wallet->get_private_key(Address(RelAddress)));
+                        return utilities::key_to_hex(_wallet->get_private_key(Address(RelAddress)));
                     }
                     catch (...)
                     {
@@ -1191,7 +1232,7 @@ namespace TiValue {
                         {
                             ASSERT_TASK_NOT_PREEMPTED(); // make sure no cancel gets swallowed by catch(...)
                             //If input is a public key...
-                            return utilities::key_to_wif(_wallet->get_private_key(Address(PublicKeyType(RelAddress))));
+                            return utilities::key_to_hex(_wallet->get_private_key(Address(PublicKeyType(RelAddress))));
                         }
                         catch (...)
                         {
@@ -1238,6 +1279,7 @@ namespace TiValue {
                     FC_THROW_EXCEPTION(sandbox_command_forbidden, "in sandbox, this command is forbidden, you cannot call it!");
 
                 const auto result = _wallet->create_account(account_name, private_data);
+
                 _wallet->auto_backup("account_create");
                 return Address(result);
             }

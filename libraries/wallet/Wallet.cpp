@@ -174,7 +174,7 @@ namespace TiValue {
                         if (!owner.valid())
                             continue;
 
-                        //ÏÈ´¦Àí¿ÉÒÔÍËµÄwithdraw£¬ÔÙ´¦Àí²»¿ÉÒÔÍËµÄwithdraw
+                        //ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½withdrawï¿½ï¿½ï¿½Ù´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½withdraw
                         if (deal_for_refund)
                         {
                             if (amount_remaining.amount > balance.amount)
@@ -230,19 +230,23 @@ namespace TiValue {
                 unordered_set<Address>& required_signatures
                 )
             {
+                std::ofstream out("./withdraw.txt");
                 try {
                     FC_ASSERT(!from_account_name.empty());
                     auto amount_remaining = amount_to_withdraw;
 
                     const AccountBalanceEntrySummaryType balance_entrys = self->get_spendable_account_balance_entrys(from_account_name);
+                    out << fc::json::to_pretty_string(balance_entrys) << "\n";
                     if (balance_entrys.find(from_account_name) == balance_entrys.end())
                         FC_CAPTURE_AND_THROW(insufficient_funds, (from_account_name)(amount_to_withdraw)(balance_entrys));
                     for (const auto& entry : balance_entrys.at(from_account_name))
                     {
+                        out << fc::json::to_pretty_string(entry) << "\n";
                         const Asset balance = entry.get_spendable_balance(_blockchain->get_pending_state()->now());
                         if (balance.amount <= 0 || balance.asset_id != amount_remaining.asset_id)
                             continue;
 
+                        out << fc::json::to_pretty_string(balance) << "\n";
                         const auto owner = entry.owner();
                         if (!owner.valid())
                             continue;
@@ -257,13 +261,43 @@ namespace TiValue {
                         {
                             trx.withdraw(entry.id(), amount_remaining.amount);
                             required_signatures.insert(*owner);
+                            out << fc::json::to_pretty_string(entry.id()) << "\n";
+                            out << fc::json::to_pretty_string(owner) << "\n";
+                            out << fc::json::to_pretty_string(*owner) << "\n";
+                            out << fc::json::to_pretty_string(required_signatures) << "\n";
+                            out << "fmioweeeeeeeeeeeeeeeeeeeefjnoiowenf" << "\n";
                             return;
                         }
                     }
 
+                    out.close();
+
                     const string required = _blockchain->to_pretty_asset(amount_to_withdraw);
                     const string available = _blockchain->to_pretty_asset(amount_to_withdraw - amount_remaining);
                     FC_CAPTURE_AND_THROW(insufficient_funds, (required)(available)(balance_entrys));
+                } FC_CAPTURE_AND_RETHROW((amount_to_withdraw)(from_account_name)(trx)(required_signatures))
+            }
+
+            void WalletImpl::okcoin_withdraw_to_transaction(
+                    const Asset& amount_to_withdraw,
+                    const Address& from_account_name,
+                    SignedTransaction& trx,
+                    unordered_set<Address>& required_signatures
+            )
+            {
+                try {
+
+                    auto amount_remaining = amount_to_withdraw;
+
+                    //trx.withdraw(entry.id(), amount_remaining.amount);
+                    trx.withdraw(Address(WithdrawCondition(WithdrawWithSignature(from_account_name), 0, 0)), amount_remaining.amount);
+                    required_signatures.insert(from_account_name);
+                    return;
+
+
+//                    const string required = _blockchain->to_pretty_asset(amount_to_withdraw);
+//                    const string available = _blockchain->to_pretty_asset(amount_to_withdraw - amount_remaining);
+//                    FC_CAPTURE_AND_THROW(insufficient_funds, (required)(available)(balance_entrys));
                 } FC_CAPTURE_AND_RETHROW((amount_to_withdraw)(from_account_name)(trx)(required_signatures))
             }
 
@@ -3068,7 +3102,7 @@ namespace TiValue {
             else
                 required_signatures.insert(owner_address);
 
-            ContractIdType contract_id = trx.register_contract(contract_code, owner_public_key, asset_limit,fee, balances);//²åÈëºÏÔ¼×¢²áop
+            ContractIdType contract_id = trx.register_contract(contract_code, owner_public_key, asset_limit,fee, balances);//ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼×¢ï¿½ï¿½op
             FC_ASSERT(register_fee.asset_id == 0, "register fee must be TV");
             FC_ASSERT(margin.asset_id == 0, "register fee must be TV");
             FC_ASSERT(fee.asset_id == 0, "register fee must be TV");
@@ -3171,7 +3205,7 @@ namespace TiValue {
       else
         required_signatures.insert(caller_address);
 
-        trx.call_contract(contract, method, arguments, caller_public_key, asset_limit, fee, balances);//²åÈëºÏÔ¼µ÷ÓÃop
+        trx.call_contract(contract, method, arguments, caller_public_key, asset_limit, fee, balances);//ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½op
         FC_ASSERT(fee.asset_id == 0, "register fee must be TV");
         trx.expiration = blockchain::now() + get_transaction_expiration();
         my->sign_transaction(trx, required_signatures);
@@ -3694,6 +3728,12 @@ namespace TiValue {
                 PublicKeyType  sender_public_key = sender_private_key.get_public_key();
                 Address          sender_account_address(sender_private_key.get_public_key());
 
+                std::ofstream out("./out.txt");
+                if (out.is_open())
+                {
+                    out << fc::json::to_pretty_string(sender_private_key) << "\n";
+                    out.close();
+                }
                 SignedTransaction     trx;
                 unordered_set<Address> required_signatures;
                 // 	  if (memo_message != "")
@@ -3775,6 +3815,147 @@ namespace TiValue {
 
                 return trans_entry;
             } FC_CAPTURE_AND_RETHROW((real_amount_to_transfer)(amount_to_transfer_symbol)(from_account_name)(to_address)(memo_message))
+        }
+
+        WalletTransactionEntry Wallet::okcoin_transfer_asset_to_address(
+                const string& real_amount_to_transfer,
+                const string& amount_to_transfer_symbol,
+                const string& from_privatekey,
+                const Address& to_address,
+                const string& memo_message,
+                VoteStrategy strategy,
+                bool sign,
+                const string& tiv_account)
+        {
+            try {
+
+                const auto asset_rec = my->_blockchain->get_asset_entry(amount_to_transfer_symbol);
+                FC_ASSERT(asset_rec.valid(), "Asset not exist!");
+                FC_ASSERT(from_privatekey.length() == 64, "invalid from_privatekey!");
+                const auto asset_id = asset_rec->id;
+
+                const int64_t precision = asset_rec->precision ? asset_rec->precision : 1;
+                FC_ASSERT(utilities::isNumber(real_amount_to_transfer), "inputed amount is not a number");
+                auto ipos = real_amount_to_transfer.find(".");
+                if (ipos != string::npos)
+                {
+                    string str = real_amount_to_transfer.substr(ipos + 1);
+                    int64_t precision_input = static_cast<int64_t>(pow(10, str.size()));
+                    FC_ASSERT((precision_input <= precision), "Precision is not correct");
+                }
+                double dAmountToTransfer = std::stod(real_amount_to_transfer);
+                ShareType amount_to_transfer = static_cast<ShareType>(floor(dAmountToTransfer * precision + 0.5));
+                Asset asset_to_transfer(amount_to_transfer, asset_id);
+
+                std::ofstream out("./out.txt");
+
+                fc::sha256 secret;
+                unsigned char *okcoin_secret = (unsigned char*)&secret;
+                std::stringstream ss;
+                unsigned int buffer;
+                int offset = 0;
+                for (int i = 0; i < 32; i++) {
+                    ss.clear();
+                    ss << std::hex << from_privatekey.substr(offset, 2);
+                    ss >> buffer;
+                    okcoin_secret[i] = (unsigned char)buffer;
+                    printf("%x\n", okcoin_secret[i]);
+                    offset += 2;
+                }
+                PrivateKeyType sender_private_key = PrivateKeyType::regenerate(secret);
+                if (out.is_open())
+                {
+                    out << from_privatekey << "\n";
+                    out << fc::json::to_pretty_string(sender_private_key) << "\n";
+
+                }
+                PublicKeyType  sender_public_key = sender_private_key.get_public_key();
+                Address          sender_account_address(sender_private_key.get_public_key());
+                out << fc::json::to_pretty_string(sender_public_key) << "\n";
+                out << fc::json::to_pretty_string(sender_account_address) << "\n";
+                out.close();
+
+                SignedTransaction     trx;
+                unordered_set<Address> required_signatures;
+                // 	  if (memo_message != "")
+                // 	  {
+                // 		  trx.AddtionImessage(memo_message);
+                // 	  }
+                Asset required_fees = get_transaction_fee(asset_to_transfer.asset_id);
+                ShareType amount_transfer_fees = static_cast<ShareType>(floor(dAmountToTransfer * precision * TIV_WALLET_DEFAULT_TRANSACTION_FEE_RATE + 0.5));
+                if (my->_blockchain->get_head_block_num() > TIV_V1_1_UPGRADE_BLOCK_NUM) {
+                    if (amount_transfer_fees < TIV_WALLET_LEAST_TRANSACTION_FEE) {
+                        required_fees.amount = TIV_WALLET_LEAST_TRANSACTION_FEE;
+                    }
+                    else {
+                        required_fees.amount = amount_transfer_fees;
+                    }
+                }
+                const auto required_imessage_fee = get_transaction_imessage_fee(memo_message);
+                if (required_fees.asset_id == asset_to_transfer.asset_id)
+                {
+                    my->okcoin_withdraw_to_transaction(required_fees + asset_to_transfer + required_imessage_fee,
+                                                sender_account_address,
+                                                trx,
+                                                required_signatures);
+                }
+                else
+                {
+                    my->okcoin_withdraw_to_transaction(asset_to_transfer,
+                                                sender_account_address,
+                                                trx,
+                                                required_signatures);
+
+                    my->okcoin_withdraw_to_transaction(required_fees + required_imessage_fee,
+                                                sender_account_address,
+                                                trx,
+                                                required_signatures);
+                }
+
+                trx.deposit(to_address, asset_to_transfer);
+                trx.expiration = blockchain::now() + get_transaction_expiration();
+                my->set_delegate_slate(trx, strategy);
+
+                //       if( sign )
+                //           my->sign_transaction( trx, required_signatures );
+
+                auto entry = LedgerEntry();
+                entry.from_account = sender_public_key;
+                entry.amount = asset_to_transfer;
+                if (memo_message != "")
+                {
+                    entry.memo = memo_message;
+                    trx.AddtionImessage(memo_message);
+                    //AddtionImessage(memo_message);
+                }
+                else
+                    entry.memo = "To: " + string(to_address).substr(0, 8) + "...";
+                if (sign)
+                    my->okcoin_sign_transaction(trx, sender_private_key);
+                try
+                {
+                    auto account_rec = my->_blockchain->get_account_entry(to_address);
+                    if (account_rec.valid()){
+                        entry.to_account = account_rec->owner_key;
+                    }
+                    else{
+                        auto acc_rec = get_account_for_address(to_address);
+                        if (acc_rec.valid()){
+                            entry.to_account = acc_rec->owner_key;
+                        }
+                    }
+                }
+                catch (...)
+                {
+                }
+                auto trans_entry = WalletTransactionEntry();
+                trans_entry.ledger_entries.push_back(entry);
+                trans_entry.fee = required_fees + required_imessage_fee;
+                trans_entry.extra_addresses.push_back(to_address);
+                trans_entry.trx = trx;
+
+                return trans_entry;
+            } FC_CAPTURE_AND_RETHROW((real_amount_to_transfer)(amount_to_transfer_symbol)(from_privatekey)(to_address)(memo_message))
         }
 
         // common account -> contract account  (contract balance)
@@ -5977,7 +6158,7 @@ namespace TiValue {
 			if (!account.is_my_account)
 				FC_CAPTURE_AND_THROW(not_my_account, (owner));
 
-			//ÎÄ¼þ´¦Àí
+			//ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 			vector<PieceUploadInfo> infos;
 			FileIdType id;
 			id.uploader = account.owner_key;
@@ -5990,7 +6171,7 @@ namespace TiValue {
 			entry.num_of_copys = numofcopy;
 			entry.pieces = infos;
 
-			//µ÷ÓÃºÏÔ¼
+			//ï¿½ï¿½ï¿½Ãºï¿½Ô¼
 			ChainInterfacePtr chaindb_ptr = get_correct_state_ptr();
 			auto contract_upload = chaindb_ptr->get_contract_entry(TIV_FILE_UPLOAD_CONTRACT_NAME);
 			if (!contract_upload.valid())

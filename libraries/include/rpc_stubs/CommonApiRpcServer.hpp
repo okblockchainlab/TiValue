@@ -240,7 +240,9 @@ namespace TiValue {
     fc::variant wallet_address_create_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant wallet_address_create_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant wallet_transfer_to_address_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
+    fc::variant okcoin_wallet_transfer_to_address_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant wallet_transfer_to_address_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
+    fc::variant wallet_transfer_address_to_address_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant create_transfer_transaction_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant create_transfer_transaction_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant wallet_transfer_to_public_account_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);

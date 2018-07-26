@@ -37,7 +37,8 @@ namespace TiValue {
 
             virtual ~Cli();
             void start();
-
+            bool execute(string& line);
+            fc::variant get_result();
             void set_input_stream_log(boost::optional<std::ostream&> input_stream_log);
             void set_daemon_mode(bool enable_daemon_mode);
             void display_status_message(const std::string& message);

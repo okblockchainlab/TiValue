@@ -139,6 +139,8 @@ namespace TiValue {
             void start_networking(std::function<void()> network_started_callback = std::function<void()>());
             void configure_from_command_line(int argc, char** argv);
             fc::future<void> start();
+            bool execute(string& line);
+            fc::variant get_result();
             void open(const path& data_dir,
                 const path& wallet_dir,
                 const optional<fc::path>& genesis_file_path = fc::optional<fc::path>(),

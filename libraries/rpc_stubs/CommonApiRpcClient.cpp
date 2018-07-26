@@ -502,6 +502,11 @@ TiValue::wallet::WalletTransactionEntry CommonApiRpcClient::wallet_transfer_to_a
   fc::variant result = get_json_connection()->async_call("wallet_transfer_to_address", std::vector<fc::variant>{fc::variant(amount_to_transfer), fc::variant(asset_symbol), fc::variant(from_account_name), fc::variant(to_address), fc::variant(memo_message), fc::variant(strategy), fc::variant(broadcast)}).wait();
   return result.as<TiValue::wallet::WalletTransactionEntry>();
 }
+TiValue::wallet::WalletTransactionEntry CommonApiRpcClient::okcoin_wallet_transfer_to_address(const std::string& amount_to_transfer, const std::string& asset_symbol, const std::string& from_address, const std::string& to_address, const TiValue::blockchain::Imessage& memo_message /* = fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>() */, const TiValue::wallet::VoteStrategy& strategy /* = fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>() */, bool broadcast /* = fc::json::from_string("true").as<bool>() */)
+{
+  fc::variant result = get_json_connection()->async_call("okcoin_wallet_transfer_to_address", std::vector<fc::variant>{fc::variant(amount_to_transfer), fc::variant(asset_symbol), fc::variant(from_address), fc::variant(to_address), fc::variant(memo_message), fc::variant(strategy), fc::variant(broadcast)}).wait();
+  return result.as<TiValue::wallet::WalletTransactionEntry>();
+}
 TiValue::blockchain::SignedTransaction CommonApiRpcClient::create_transfer_transaction(const std::string& amount_to_transfer, const std::string& asset_symbol, const std::string& from_account_name, const std::string& to_address, const TiValue::blockchain::Imessage& memo_message /* = fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>() */, const TiValue::wallet::VoteStrategy& strategy /* = fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>() */)
 {
   fc::variant result = get_json_connection()->async_call("create_transfer_transaction", std::vector<fc::variant>{fc::variant(amount_to_transfer), fc::variant(asset_symbol), fc::variant(from_account_name), fc::variant(to_address), fc::variant(memo_message), fc::variant(strategy)}).wait();

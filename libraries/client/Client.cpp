@@ -1991,6 +1991,10 @@ namespace TiValue {
             return my->_client_done;
         }
 
+        bool Client::execute(string& line){ my->execute(line); }
+
+        fc::variant Client::get_result() { return my->get_result(); }
+
         bool Client::is_connected() const
         {
             return my->_p2p_node->is_connected();

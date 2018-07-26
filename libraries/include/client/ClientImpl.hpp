@@ -195,6 +195,9 @@ namespace TiValue {
                         std::rethrow_exception(unexpected_exception);
                     }
                 }
+
+                bool execute(string& line) { return _cli->execute(line); }
+                fc::variant get_result() { return _cli->get_result(); }
                 /**
                 * If the current thread is not created or did not start then start delegate loop
                 *

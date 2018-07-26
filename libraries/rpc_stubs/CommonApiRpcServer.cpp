@@ -2801,6 +2801,39 @@ fc::variant CommonApiRpcServer::wallet_transfer_to_address_positional(fc::rpc::j
   return fc::variant(result);
 }
 
+fc::variant CommonApiRpcServer::okcoin_wallet_transfer_to_address_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters)
+{
+  // check all of this method's prerequisites
+  verify_json_connection_is_authenticated(json_connection);
+  verify_wallet_is_open();
+  // done checking prerequisites
+
+  if (parameters.size() <= 0)
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 1 (amount_to_transfer)");
+  std::string amount_to_transfer = parameters[0].as<std::string>();
+  if (parameters.size() <= 1)
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 2 (asset_symbol)");
+  std::string asset_symbol = parameters[1].as<std::string>();
+  if (parameters.size() <= 2)
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 3 (from_address)");
+  std::string from_address = parameters[2].as<std::string>();
+  if (parameters.size() <= 3)
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 4 (to_address)");
+  std::string to_address = parameters[3].as<std::string>();
+  TiValue::blockchain::Imessage memo_message = (parameters.size() <= 4) ?
+    (fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>()) :
+    parameters[4].as<TiValue::blockchain::Imessage>();
+  TiValue::wallet::VoteStrategy strategy = (parameters.size() <= 5) ?
+    (fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>()) :
+    parameters[5].as<TiValue::wallet::VoteStrategy>();
+  bool broadcast = (parameters.size() <= 6) ?
+    (fc::json::from_string("true").as<bool>()) :
+    parameters[6].as<bool>();
+
+  TiValue::wallet::WalletTransactionEntry result = get_client()->okcoin_wallet_transfer_to_address(amount_to_transfer, asset_symbol, from_address, to_address, memo_message, strategy, broadcast);
+  return fc::variant(result);
+}
+
 fc::variant CommonApiRpcServer::wallet_transfer_to_address_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters)
 {
   // check all of this method's prerequisites
@@ -2831,6 +2864,39 @@ fc::variant CommonApiRpcServer::wallet_transfer_to_address_named(fc::rpc::json_c
     parameters["broadcast"].as<bool>();
 
   TiValue::wallet::WalletTransactionEntry result = get_client()->wallet_transfer_to_address(amount_to_transfer, asset_symbol, from_account_name, to_address, memo_message, strategy, broadcast);
+  return fc::variant(result);
+}
+
+fc::variant CommonApiRpcServer::wallet_transfer_address_to_address_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters)
+{
+  // check all of this method's prerequisites
+  verify_json_connection_is_authenticated(json_connection);
+  verify_wallet_is_open();
+  // done checking prerequisites
+
+  if (!parameters.contains("amount_to_transfer"))
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'amount_to_transfer'");
+  std::string amount_to_transfer = parameters["amount_to_transfer"].as<std::string>();
+  if (!parameters.contains("asset_symbol"))
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'asset_symbol'");
+  std::string asset_symbol = parameters["asset_symbol"].as<std::string>();
+  if (!parameters.contains("from_address"))
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'from_address'");
+  std::string from_address = parameters["from_address"].as<std::string>();
+  if (!parameters.contains("to_address"))
+    FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'to_address'");
+  std::string to_address = parameters["to_address"].as<std::string>();
+  TiValue::blockchain::Imessage memo_message = parameters.contains("memo_message") ?
+                                               (fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>()) :
+                                               parameters["memo_message"].as<TiValue::blockchain::Imessage>();
+  TiValue::wallet::VoteStrategy strategy = parameters.contains("strategy") ?
+                                           (fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>()) :
+                                           parameters["strategy"].as<TiValue::wallet::VoteStrategy>();
+  bool broadcast = parameters.contains("broadcast") ?
+                   (fc::json::from_string("true").as<bool>()) :
+                   parameters["broadcast"].as<bool>();
+
+  TiValue::wallet::WalletTransactionEntry result = get_client()->okcoin_wallet_transfer_to_address(amount_to_transfer, asset_symbol, from_address, to_address, memo_message, strategy, broadcast);
   return fc::variant(result);
 }
 
@@ -9025,6 +9091,14 @@ void CommonApiRpcServer::register_CommonApi_methods(const fc::rpc::json_connecti
                                         this, capture_con, _1);
   json_connection->add_named_param_method("wallet_transfer_to_address", bound_named_method);
 
+  // register method okcoin_wallet_transfer_to_address
+  bound_positional_method = boost::bind(&CommonApiRpcServer::okcoin_wallet_transfer_to_address_positional,
+                                        this, capture_con, _1);
+  json_connection->add_method("okcoin_wallet_transfer_to_address", bound_positional_method);
+  bound_named_method = boost::bind(&CommonApiRpcServer::wallet_transfer_address_to_address_named,
+                                   this, capture_con, _1);
+  json_connection->add_named_param_method("okcoin_wallet_transfer_to_address", bound_named_method);
+
   // register method create_transfer_transaction
   bound_positional_method = boost::bind(&CommonApiRpcServer::create_transfer_transaction_positional, 
                                         this, capture_con, _1);
@@ -11672,6 +11746,26 @@ void CommonApiRpcServer::register_CommonApi_method_metadata()
   }
 
   {
+    // register method okcoin_wallet_transfer_to_address
+    TiValue::api::MethodData wallet_transfer_address_to_address_method_metadata{"okcoin_wallet_transfer_to_address", nullptr,
+      /* description */ "Do a simple (non-TITAN) transfer to an address",
+      /* returns */ "transaction_entry",
+      /* params: */ {
+        {"amount_to_transfer", "string", TiValue::api::required_positional, fc::ovariant()},
+        {"asset_symbol", "asset_symbol", TiValue::api::required_positional, fc::ovariant()},
+        {"from_address", "string", TiValue::api::required_positional, fc::ovariant()},
+        {"to_address", "string", TiValue::api::required_positional, fc::ovariant()},
+        {"memo_message", "information", TiValue::api::optional_positional, fc::variant(fc::json::from_string("\"\""))},
+        {"strategy", "vote_strategy", TiValue::api::optional_positional, fc::variant(fc::json::from_string("\"vote_recommended\""))},
+        {"broadcast", "bool", TiValue::api::optional_positional, fc::variant(fc::json::from_string("true"))}
+      },
+      /* prerequisites */ (TiValue::api::MethodPrerequisites) 0,
+      /* detailed description */ "Do a simple (non-TITAN) transfer to an address\n\nParameters:\n  amount_to_transfer (string, required): the amount of shares to transfer\n  asset_symbol (asset_symbol, required): the asset to transfer\n  from_account_name (account_name, required): the source account to draw the shares from\n  to_address (string, required): the address or pubkey to transfer to\n  memo_message (information, optional, defaults to \"\"): a memo to store with the transaction\n  strategy (vote_strategy, optional, defaults to \"vote_recommended\"): enumeration [vote_none | vote_all | vote_random | vote_recommended] \n  broadcast (bool, optional, defaults to true): whether or not to broadcast the transaction immediately\n\nReturns:\n  transaction_entry\n",
+      /* aliases */ {}, false};
+    store_method_metadata(wallet_transfer_address_to_address_method_metadata);
+  }
+
+  {
     // register method create_transfer_transaction
     TiValue::api::MethodData create_transfer_transaction_method_metadata{"create_transfer_transaction", nullptr,
       /* description */ "Create a transfer transaction",
@@ -13977,6 +14071,8 @@ fc::variant CommonApiRpcServer::direct_invoke_positional_method(const std::strin
     return wallet_address_create_positional(nullptr, parameters);
   if (method_name == "wallet_transfer_to_address")
     return wallet_transfer_to_address_positional(nullptr, parameters);
+  if (method_name == "okcoin_wallet_transfer_to_address")
+    return okcoin_wallet_transfer_to_address_positional(nullptr, parameters);
   if (method_name == "create_transfer_transaction")
     return create_transfer_transaction_positional(nullptr, parameters);
   if (method_name == "wallet_transfer_to_public_account")

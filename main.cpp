@@ -25,6 +25,33 @@
 #include <iostream>
 #include <iomanip>
 
+
+static TiValue::client::ClientPtr client = NULL;
+
+#if 0
+int main(int argc, char** argv) {
+    try {
+        client = std::make_shared<TiValue::client::Client>("bitshares_client");
+        client->configure_from_command_line(argc, argv);
+    }
+    catch (const fc::exception &e) {
+        std::cerr << "------------ error --------------\n"
+                  << e.to_detail_string() << "\n";
+        wlog("${e}", ("e", e.to_detail_string()));
+    }
+
+    string commandline = "wallet_open meng";
+    client->execute(commandline);
+    commandline = "wallet_unlock 9999 iou910302";
+    client->execute(commandline);
+    commandline = "wallet_transfer_to_address 100 TV total TV7XbnaP4V6oaWQzHiQsSiedcHTo4XZHS5b9kZGNAgyrj16ZEW2P";
+    client->execute(commandline);
+
+    TiValue::blockchain::shutdown_ntp_time();
+
+}
+
+#else
 int main(int argc, char** argv)
 {
     try
@@ -66,5 +93,6 @@ int main(int argc, char** argv)
     fc::configure_logging(fc::logging_config::default_config());
     return 0;
 }
+#endif
 #endif
 

@@ -1400,6 +1400,14 @@ void WalletImpl::sign_transaction(SignedTransaction& transaction, const unordere
     } FC_CAPTURE_AND_RETHROW((transaction)(required_signatures))
 }
 
+void WalletImpl::okcoin_sign_transaction(SignedTransaction& transaction, const fc::ecc::private_key& signer)const
+{
+    try {
+        const auto chain_id = _blockchain->get_chain_id();
+        transaction.sign(signer, chain_id);
+    } FC_CAPTURE_AND_RETHROW((transaction)(signer))
+}
+
 void Wallet::cache_transaction(WalletTransactionEntry& transaction_entry, bool store)
 {
     try {
@@ -2150,9 +2158,9 @@ PrettyTransaction		Wallet::to_pretty_trx(const TiValue::blockchain::TransactionE
 			pretty_entry.to_account_name = account_name_entry->name;
 			pretty_entry.amount = Asset(0); // Assume scan_withdraw came first
 
-            //Õâ±ßÎÞ·¨Í¨¹ýÊÜÍÐÂÊÀ´Çø·Ö³öÄÄÖÖ½»Ò×ÊÇÉý¼¶ÕË»§Îª´úÀí£¬ÄÄÖÖ½»Ò×ÊÇ¸üÐÂÕË»§ÐÅÏ¢
-            //Òò´ËÖ»ÄÜ¿¼ÂÇÍ¨¹ýÊÖÐø·ÑÀ´½øÐÐÅÐ¶Ï£¬µ«ÊÇÊÖÐø·Ñ²¢²»Ò»¶¨ÊÇÒ»¸ö¹Ì¶¨µÄÊý¶î
-            //ËùÒÔÏÖÔÚÖ»ÄÜ¼òµ¥´Ö±©µÃÓÃÒ»¸ö1000TICÀ´½øÐÐ»®·Ö£¬Ö»ÒªÊÇ´óÓÚ1000TIC¶¼ÈÏÎªÊÇÉý¼¶´úÀí
+            //ï¿½ï¿½ï¿½ï¿½Þ·ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½Ï¢
+            //ï¿½ï¿½ï¿½Ö»ï¿½Ü¿ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½Ü¼òµ¥´Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½1000TICï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½Ö£ï¿½Ö»Òªï¿½Ç´ï¿½ï¿½ï¿½1000TICï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             if (total_fee <= Asset( 1000 * TIV_BLOCKCHAIN_PRECISION ))
             {
                 pretty_entry.memo = "update " + account_name_entry->name;
@@ -2323,7 +2331,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
 
         for (const auto& op : result_trx.operations)
         {
-            // ×¢²áµÄºÏÔ¼³É¹¦ÉÏÁ´
+            // ×¢ï¿½ï¿½Äºï¿½Ô¼ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(contract_info_op_type))
                 register_success = true;
             
@@ -2349,7 +2357,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
         }
 
         pretty_trx.to_contract_ledger_entry = to_contract_ledger_entry;
-        // from_contract_ledger_entries Îª¿Õ
+        // from_contract_ledger_entries Îªï¿½ï¿½
         pretty_trx.from_contract_ledger_entries = from_contract_ledger_entries;
     }
     else if (contract_op_type == TiValue::blockchain::OperationTypeEnum::upgrade_contract_op_type)
@@ -2379,17 +2387,17 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
                 to_contract_ledger_entry.from_account_name = account_entry->name;
         }
 
-        //ºÏÔ¼Éý¼¶ÕßµÄ»¨·Ñ
+        //ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ»ï¿½ï¿½ï¿½
         ShareType all_cost = 0;
-        //ºÏÔ¼µÄËùÓÐµÄ³öÕË½ð¶î
+        //ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄ³ï¿½ï¿½Ë½ï¿½ï¿½
         ShareType withdraw_from_contract = 0;
-        //´ÓºÏÔ¼×ªÕËµ½ÆÕÍ¨ÕË»§ÖÐµÄ½ð¶î
+        //ï¿½Óºï¿½Ô¼×ªï¿½Ëµï¿½ï¿½ï¿½Í¨ï¿½Ë»ï¿½ï¿½ÐµÄ½ï¿½ï¿½
         ShareType deposit_to_account = 0;
         bool upgrade_success = false;
 
         for (const auto& op : result_trx.operations)
         {
-            // ºÏÔ¼³É¹¦Éý¼¶
+            // ï¿½ï¿½Ô¼ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(on_upgrade_op_type))
                 upgrade_success = true;
 
@@ -2400,20 +2408,20 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
                     all_cost = all_cost + balance.second;
             }
 
-            // ºÏÔ¼³öÕË(º¬±£Ö¤½ð) 
+            // ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½) 
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(withdraw_contract_op_type))
             {
                 WithdrawContractOperation withdraw_contract_op = op.as<WithdrawContractOperation>();
                 withdraw_from_contract = withdraw_from_contract + withdraw_contract_op.amount;
             }
 
-            // ÓÃ»§ÈëÕË
+            // ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(deposit_op_type))
             {
                 DepositOperation deposit_op = op.as<DepositOperation>();
                 deposit_to_account = deposit_to_account + deposit_op.amount;
 
-                // ÏòÓÃ»§×ªÕË½á¹û½»Ò×
+                // ï¿½ï¿½ï¿½Ã»ï¿½×ªï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 PrettyContractLedgerEntry from_contract_ledger_entry;
                 from_contract_ledger_entry.from_account = contract_id.AddressToString(AddressType::contract_address);
                 from_contract_ledger_entry.from_account_name = to_contract_ledger_entry.to_account_name;
@@ -2437,7 +2445,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
             //to_contract_ledger_entry.memo = "upgrade contract success";
             pretty_trx.is_completed = 0;
 
-            // ±£Ö¤½ð³öÕË½á¹û½»Ò×
+            // ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             ShareType withdraw_margin = withdraw_from_contract - deposit_to_account;
             PrettyContractLedgerEntry from_contract_ledger_entry;
             from_contract_ledger_entry.from_account = contract_id.AddressToString(AddressType::contract_address);
@@ -2487,18 +2495,18 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
                 to_contract_ledger_entry.from_account_name = account_entry->name;
         }
 
-        //ºÏÔ¼Ïú»ÙÕßµÄ»¨·Ñ
+        //ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ»ï¿½ï¿½ï¿½
         ShareType all_cost = 0;
         bool destroy_success = false;
 
         for (const auto& op : result_trx.operations)
         {
-            // ºÏÔ¼³É¹¦Ïú»Ù
+            // ï¿½ï¿½Ô¼ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(on_destroy_op_type))
             {
                 destroy_success = true;
 
-                // ºÏÔ¼ÕË»§ÖÐon_destroyÃ»ÓÐÍËÍêµÄÓà¶îÍË»¹¸øºÏÔ¼ËùÓÐÕß  
+                // ï¿½ï¿½Ô¼ï¿½Ë»ï¿½ï¿½ï¿½on_destroyÃ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
                 OnDestroyOperation on_destroy_op = op.as<OnDestroyOperation>();
 
                 if (on_destroy_op.amount.amount > 0)
@@ -2527,12 +2535,12 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
                     all_cost = all_cost + balance.second;
             }
 
-            // ÓÃ»§ÈëÕË(º¬ÍË»¹±£Ö¤½ð)
+            // ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½Ë»ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½)
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(deposit_op_type))
             {
                 DepositOperation deposit_op = op.as<DepositOperation>();
 
-                // ÏòÓÃ»§×ªÕË½á¹û½»Ò×
+                // ï¿½ï¿½ï¿½Ã»ï¿½×ªï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 PrettyContractLedgerEntry from_contract_ledger_entry;
                 from_contract_ledger_entry.from_account = contract_id.AddressToString(AddressType::contract_address);
                 from_contract_ledger_entry.from_account_name = to_contract_ledger_entry.to_account_name;
@@ -2576,7 +2584,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
         Address contract_caller = TiValue::blockchain::Address(call_contract_op.caller);
         ContractIdType contract_id = call_contract_op.contract;
 
-        //µ±½»Ò×Îªµ÷ÓÃºÏÔ¼½»Ò×Ê±£¬¼ÇÂ¼ÏÂµ÷ÓÃºÏÔ¼µÄ·½·¨Óëµ÷ÓÃºÏÔ¼´«ÈëµÄ²ÎÊý
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½Ãºï¿½Ô¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Â¼ï¿½Âµï¿½ï¿½Ãºï¿½Ô¼ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½Ô¼ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
         pretty_trx.reserved.clear();
         pretty_trx.reserved.push_back(call_contract_op.method);
         pretty_trx.reserved.push_back(call_contract_op.args);
@@ -2595,13 +2603,13 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
         if (contract_entry.valid() && (contract_entry->level == ContractLevel::forever))
             to_contract_ledger_entry.to_account_name = contract_entry->contract_name;
 
-        //ºÏÔ¼µ÷ÓÃÕßµÄ»¨·Ñ
+        //ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ»ï¿½ï¿½ï¿½
         ShareType all_cost = 0;
         bool call_success = false;
 
         for (const auto& op : result_trx.operations)
         {
-            // ºÏÔ¼³É¹¦µ÷ÓÃ
+            // ï¿½ï¿½Ô¼ï¿½É¹ï¿½ï¿½ï¿½ï¿½ï¿½
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(on_call_success_op_type))
                 call_success = true;
 
@@ -2616,7 +2624,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
             {
                 DepositOperation deposit_op = op.as<DepositOperation>();
 
-                // ÏòÓÃ»§×ªÕË½á¹û½»Ò×
+                // ï¿½ï¿½ï¿½Ã»ï¿½×ªï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 PrettyContractLedgerEntry from_contract_ledger_entry;
                 from_contract_ledger_entry.from_account = contract_id.AddressToString(AddressType::contract_address);
                 from_contract_ledger_entry.from_account_name = to_contract_ledger_entry.to_account_name;
@@ -2677,13 +2685,13 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
        
         ShareType transfer_amount = transfer_contract_op.transfer_amount.amount;
 
-        //ºÏÔ¼×ªÕËÕßµÄ»¨·Ñ
+        //ï¿½ï¿½Ô¼×ªï¿½ï¿½ï¿½ßµÄ»ï¿½ï¿½ï¿½
         ShareType all_cost = 0;
         bool transfer_success = false;
 
         for (const auto& op : result_trx.operations)
         {
-            // ÏòºÏÔ¼³É¹¦³äÖµ
+            // ï¿½ï¿½ï¿½Ô¼ï¿½É¹ï¿½ï¿½ï¿½Öµ
             if (op.type == fc::enum_type<uint8_t, TiValue::blockchain::OperationTypeEnum>(deposit_contract_op_type))
                 transfer_success = true;
 
@@ -2698,7 +2706,7 @@ PrettyContractTransaction		Wallet::to_pretty_contract_trx(const TiValue::blockch
             {
                 DepositOperation deposit_op = op.as<DepositOperation>();
 
-                // ÏòÓÃ»§×ªÕË½á¹û½»Ò×
+                // ï¿½ï¿½ï¿½Ã»ï¿½×ªï¿½Ë½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 PrettyContractLedgerEntry from_contract_ledger_entry;
                 from_contract_ledger_entry.from_account = contract_id.AddressToString(AddressType::contract_address);
                 from_contract_ledger_entry.from_account_name = to_contract_ledger_entry.to_account_name;

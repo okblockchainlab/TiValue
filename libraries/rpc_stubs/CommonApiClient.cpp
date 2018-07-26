@@ -3036,6 +3036,41 @@ TiValue::wallet::WalletTransactionEntry CommonApiClient::wallet_transfer_to_addr
   FC_RETHROW_EXCEPTIONS(warn, "")
 }
 
+TiValue::wallet::WalletTransactionEntry CommonApiClient::okcoin_wallet_transfer_to_address(const std::string& amount_to_transfer, const std::string& asset_symbol, const std::string& from_address, const std::string& to_address, const TiValue::blockchain::Imessage& memo_message /* = fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>() */, const TiValue::wallet::VoteStrategy& strategy /* = fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>() */, bool broadcast /* = fc::json::from_string("true").as<bool>() */)
+{
+  ilog("received RPC call: wallet_transfer_to_address(${amount_to_transfer}, ${asset_symbol}, ${from_address}, ${to_address}, ${memo_message}, ${strategy}, ${broadcast})", ("amount_to_transfer", amount_to_transfer)("asset_symbol", asset_symbol)("from_address", from_address)("to_address", to_address)("memo_message", memo_message)("strategy", strategy)("broadcast", broadcast));
+  TiValue::api::GlobalApiLogger* glog = TiValue::api::GlobalApiLogger::get_instance();
+  uint64_t call_id = 0;
+  fc::variants args;
+  if( glog != NULL )
+  {
+    args.push_back( fc::variant(amount_to_transfer) );
+    args.push_back( fc::variant(asset_symbol) );
+    args.push_back( fc::variant(from_address) );
+    args.push_back( fc::variant(to_address) );
+    args.push_back( fc::variant(memo_message) );
+    args.push_back( fc::variant(strategy) );
+    args.push_back( fc::variant(broadcast) );
+    call_id = glog->log_call_started( this, "okcoin_wallet_transfer_to_address", args );
+  }
+
+  struct scope_exit
+  {
+    fc::time_point start_time;
+    scope_exit() : start_time(fc::time_point::now()) {}
+    ~scope_exit() { dlog("RPC call okcoin_wallet_transfer_to_address finished in ${time} ms", ("time", (fc::time_point::now() - start_time).count() / 1000)); }
+  } execution_time_logger;
+  try
+  {
+    TiValue::wallet::WalletTransactionEntry result = get_impl()->okcoin_wallet_transfer_to_address(amount_to_transfer, asset_symbol, from_address, to_address, memo_message, strategy, broadcast);
+    if( call_id != 0 )
+      glog->log_call_finished( call_id, this, "okcoin_wallet_transfer_to_address", args, fc::variant(result) );
+
+    return result;
+  }
+  FC_RETHROW_EXCEPTIONS(warn, "")
+}
+
 TiValue::blockchain::SignedTransaction CommonApiClient::create_transfer_transaction(const std::string& amount_to_transfer, const std::string& asset_symbol, const std::string& from_account_name, const std::string& to_address, const TiValue::blockchain::Imessage& memo_message /* = fc::json::from_string("\"\"").as<TiValue::blockchain::Imessage>() */, const TiValue::wallet::VoteStrategy& strategy /* = fc::json::from_string("\"vote_recommended\"").as<TiValue::wallet::VoteStrategy>() */)
 {
   ilog("received RPC call: create_transfer_transaction(${amount_to_transfer}, ${asset_symbol}, ${from_account_name}, ${to_address}, ${memo_message}, ${strategy})", ("amount_to_transfer", amount_to_transfer)("asset_symbol", asset_symbol)("from_account_name", from_account_name)("to_address", to_address)("memo_message", memo_message)("strategy", strategy));

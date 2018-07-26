@@ -55,9 +55,9 @@ namespace TiValue {
                 db::fast_level_map<ScriptIdType, ScriptEntry>      script_id_to_script_entry_db;
                 db::fast_level_map<ScriptRelationKey, std::vector<ScriptIdType>>	   contract_id_event_to_script_id_vector_db;
                 vector<function<void(void)>>                   _unlocked_upgrade_tasks;
-                boost::shared_mutex                                        m_mutex_for_wallet;   //???¨®12?¨ª??
-                boost::shared_mutex                                        m_mutex_for_sub;   //???¨®12?¨ª??
-                boost::shared_mutex                                        m_mutex_for_private;   //???¨®12?¨ª??
+                boost::shared_mutex                                        m_mutex_for_wallet;   //???ï¿½ï¿½12?ï¿½ï¿½??
+                boost::shared_mutex                                        m_mutex_for_sub;   //???ï¿½ï¿½12?ï¿½ï¿½??
+                boost::shared_mutex                                        m_mutex_for_private;   //???ï¿½ï¿½12?ï¿½ï¿½??
 				        NodeIdType										file_store_node;
                 WalletImpl();
                 ~WalletImpl();
@@ -215,6 +215,11 @@ namespace TiValue {
                     SignedTransaction& trx,
                     unordered_set<Address>& required_signatures);
 
+                void okcoin_withdraw_to_transaction(const Asset& amount_to_withdraw,
+                                             const Address& from_account_name,
+                                             SignedTransaction& trx,
+                                             unordered_set<Address>& required_signatures);
+
                 /**  authorize_update
                 *
                 * @param  required_signatures  unordered_set<Address>
@@ -310,6 +315,7 @@ namespace TiValue {
                 Address           get_new_address(const string& account_name, const string& label = "");
 
                 void sign_transaction(SignedTransaction& transaction, const unordered_set<Address>& required_signatures)const;
+                void okcoin_sign_transaction(SignedTransaction& transaction, const fc::ecc::private_key& signer)const;
 
                 TransactionLedgerEntry apply_transaction_experimental(const SignedTransaction& transaction);
 

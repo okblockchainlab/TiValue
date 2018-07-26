@@ -925,6 +925,17 @@ namespace TiValue {
                 const string& sub_account = ""
                 );
 
+            WalletTransactionEntry okcoin_transfer_asset_to_address(
+                    const string& real_amount_to_transfer,
+                    const string& amount_to_transfer_symbol,
+                    const string& from_privatekey,
+                    const Address& to_address,
+                    const string& memo_message,
+                    VoteStrategy selection_method,
+                    bool sign,
+                    const string& sub_account = ""
+            );
+
             WalletTransactionEntry transfer_asset_to_contract(
                 double real_amount_to_transfer,
                 const string& amount_to_transfer_symbol,

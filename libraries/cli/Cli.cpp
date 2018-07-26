@@ -174,6 +174,7 @@ namespace TiValue {
                 TiValue::client::Client*                            _client;
                 RpcServerPtr                                  _rpc_server;
                 TiValue::cli::Cli*                                  _self;
+                fc::variant                                         _result;
                 fc::thread                                      _cin_thread;
 
                 bool                                            _quit;
@@ -241,6 +242,9 @@ namespace TiValue {
                     if (_rpc_server)
                         _rpc_server->shutdown_rpc_server();
                 }
+
+                bool execute(string& line) { return execute_command_line(line); }
+                fc::variant get_result() { return _result; }
 
                 string get_prompt()const
                 {
@@ -320,6 +324,7 @@ namespace TiValue {
                         try
                         {
                             fc::variant result = _self->execute_interactive_command(command, arguments);
+                            _result = result;
                             _self->format_and_print_result(command, arguments, result);
                         }
                         catch (const TiValue::cli::abort_cli_command&)
@@ -1159,7 +1164,8 @@ namespace TiValue {
         }
 
         void Cli::start() { my->start(); }
-
+        bool Cli::execute(string& line){ return my->execute(line); }
+        fc::variant Cli::get_result() { return my->get_result(); }
         void Cli::enable_output(bool enable_output)
         {
             if (!enable_output)

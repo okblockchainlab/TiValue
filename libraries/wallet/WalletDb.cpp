@@ -187,7 +187,7 @@ namespace TiValue {
 
                 void remove_generic_wallet_entry(const GenericWalletEntry& rec)
                 {
-                    //´ÓdbÖÐ½«Ç®°ü¼ÇÂ¼É¾³ý
+                    //ï¿½ï¿½dbï¿½Ð½ï¿½Ç®ï¿½ï¿½ï¿½ï¿½Â¼É¾ï¿½ï¿½
                     try{
                         _entrys.remove(rec.get_wallet_entry_index(), true);
                     } FC_CAPTURE_AND_RETHROW((rec))
@@ -474,7 +474,7 @@ namespace TiValue {
                 account_id_to_wallet_entry_index.erase(accRec->id);
                 GenericWalletEntry entry(*accRec);
                 my->remove_generic_wallet_entry(entry);
-                //´Óµ±Ç°ÔËÐÐÊ±Êý¾ÝÖÐ½«ÕËºÅ¼ÍÂ¼É¾³ý
+                //ï¿½Óµï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ËºÅ¼ï¿½Â¼É¾ï¿½ï¿½
                 address_to_account_wallet_entry_index.erase(Address(accRec->owner_key));
                 name_to_account_wallet_entry_index.erase(accRec->name);
                 account_id_to_wallet_entry_index.erase(accRec->id);
@@ -498,7 +498,7 @@ namespace TiValue {
                 btc_to_tiv_address.erase(Address(PtsAddress(accRec->active_key(), true, 56)));
 
 
-                //´ÓdbÖÐ½«keyÉ¾³ý,Èç¹û²»É¾³ý,scan_accountsÊ±»á½«ÓëkeyÏà¹ØµÄÕËºÅ´æÈëÇ®°ü
+                //ï¿½ï¿½dbï¿½Ð½ï¿½keyÉ¾ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½É¾ï¿½ï¿½,scan_accountsÊ±ï¿½á½«ï¿½ï¿½keyï¿½ï¿½Øµï¿½ï¿½ËºÅ´ï¿½ï¿½ï¿½Ç®ï¿½ï¿½
                 oWalletKeyEntry tmpRec = lookup_key(accRec->owner_address());
                 if (tmpRec.valid())
                 {
@@ -543,7 +543,7 @@ namespace TiValue {
                     keys.erase(accRec->signing_address());
                     accounts.erase(accRec->wallet_entry_index);
                 }
-                //É¾³ý¶ÔÓ¦µÄ½»Ò×¼ÇÂ¼
+                //É¾ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä½ï¿½ï¿½×¼ï¿½Â¼
                 unordered_map<TransactionIdType, WalletTransactionEntry>::iterator mapit = transactions.begin();
                 unordered_map<TransactionIdType, WalletTransactionEntry>::iterator tmpit;
                 while (mapit != transactions.end())
