@@ -140,7 +140,9 @@ namespace TiValue {
     fc::variant network_get_peer_info_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant network_get_peer_info_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant network_broadcast_transaction_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
+    fc::variant okcoin_network_broadcast_transaction_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant network_broadcast_transaction_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
+    fc::variant okcoin_network_broadcast_transaction_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant network_set_advanced_node_parameters_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);
     fc::variant network_set_advanced_node_parameters_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters);
     fc::variant network_get_advanced_node_parameters_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters);

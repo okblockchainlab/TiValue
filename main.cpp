@@ -28,7 +28,7 @@
 
 static TiValue::client::ClientPtr client = NULL;
 
-#if 0
+#if 1
 int main(int argc, char** argv) {
     try {
         client = std::make_shared<TiValue::client::Client>("bitshares_client");
@@ -44,9 +44,14 @@ int main(int argc, char** argv) {
     client->execute(commandline);
     commandline = "wallet_unlock 9999 iou910302";
     client->execute(commandline);
-    commandline = "wallet_transfer_to_address 100 TV total TV7XbnaP4V6oaWQzHiQsSiedcHTo4XZHS5b9kZGNAgyrj16ZEW2P";
+    commandline = "okcoin_wallet_transfer_to_address 1000 TV a4b7356107c1098ed8e6a71f47c6298e01145f0ab7beaed9b3894e280beb14ce TV5MbvgSVpRfxKVkDwRsFr6sSkW9oX2LFt2fXVpsRufvwHDGScPi";
     client->execute(commandline);
+    fc::variant result =  client->get_result();
+    commandline = "okcoin_network_broadcast_transaction ";
+    commandline += result.as<string>();
 
+    std::cout << commandline << std::endl;
+    client->execute(commandline);
     TiValue::blockchain::shutdown_ntp_time();
 
 }

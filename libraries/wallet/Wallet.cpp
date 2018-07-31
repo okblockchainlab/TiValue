@@ -265,7 +265,6 @@ namespace TiValue {
                             out << fc::json::to_pretty_string(owner) << "\n";
                             out << fc::json::to_pretty_string(*owner) << "\n";
                             out << fc::json::to_pretty_string(required_signatures) << "\n";
-                            out << "fmioweeeeeeeeeeeeeeeeeeeefjnoiowenf" << "\n";
                             return;
                         }
                     }
@@ -3727,13 +3726,6 @@ namespace TiValue {
                 PrivateKeyType sender_private_key = get_active_private_key(from_account_name);
                 PublicKeyType  sender_public_key = sender_private_key.get_public_key();
                 Address          sender_account_address(sender_private_key.get_public_key());
-
-                std::ofstream out("./out.txt");
-                if (out.is_open())
-                {
-                    out << fc::json::to_pretty_string(sender_private_key) << "\n";
-                    out.close();
-                }
                 SignedTransaction     trx;
                 unordered_set<Address> required_signatures;
                 // 	  if (memo_message != "")
@@ -3847,7 +3839,7 @@ namespace TiValue {
                 ShareType amount_to_transfer = static_cast<ShareType>(floor(dAmountToTransfer * precision + 0.5));
                 Asset asset_to_transfer(amount_to_transfer, asset_id);
 
-                std::ofstream out("./out.txt");
+                //std::ofstream out("./out.txt");
 
                 fc::sha256 secret;
                 unsigned char *okcoin_secret = (unsigned char*)&secret;
@@ -3859,21 +3851,20 @@ namespace TiValue {
                     ss << std::hex << from_privatekey.substr(offset, 2);
                     ss >> buffer;
                     okcoin_secret[i] = (unsigned char)buffer;
-                    printf("%x\n", okcoin_secret[i]);
                     offset += 2;
                 }
                 PrivateKeyType sender_private_key = PrivateKeyType::regenerate(secret);
-                if (out.is_open())
-                {
-                    out << from_privatekey << "\n";
-                    out << fc::json::to_pretty_string(sender_private_key) << "\n";
+                //if (out.is_open())
+                //{
+                //    out << from_privatekey << "\n";
+                //    out << fc::json::to_pretty_string(sender_private_key) << "\n";
 
-                }
+                //}
                 PublicKeyType  sender_public_key = sender_private_key.get_public_key();
                 Address          sender_account_address(sender_private_key.get_public_key());
-                out << fc::json::to_pretty_string(sender_public_key) << "\n";
-                out << fc::json::to_pretty_string(sender_account_address) << "\n";
-                out.close();
+                //out << fc::json::to_pretty_string(sender_public_key) << "\n";
+                //out << fc::json::to_pretty_string(sender_account_address) << "\n";
+                //out.close();
 
                 SignedTransaction     trx;
                 unordered_set<Address> required_signatures;

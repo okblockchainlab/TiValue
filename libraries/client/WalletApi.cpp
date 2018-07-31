@@ -613,11 +613,18 @@ namespace TiValue {
                                                                 strategy,
                                                                 true,
                                                                 strSubAccount);
-
+                //std::ofstream out("./entry.txt");
+                //if (out.is_open())
+                //{
+                //    out << fc::json::to_string(entry) << "\n";
+                //    auto tmpentry = fc::json::from_string(fc::json::to_string(entry)).as<WalletTransactionEntry>();
+                //    out << fc::json::to_pretty_string(tmpentry) << "\n";
+                //    out.close();
+                //}
                 if (broadcast)
                 {
-                    _wallet->cache_transaction(entry);
-                    network_broadcast_transaction(entry.trx);
+                 //   _wallet->cache_transaction(entry);
+                 //   network_broadcast_transaction(entry.trx);
                 }
                 return entry;
 

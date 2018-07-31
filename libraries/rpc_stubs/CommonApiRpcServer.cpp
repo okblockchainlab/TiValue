@@ -1345,6 +1345,29 @@ fc::variant CommonApiRpcServer::network_broadcast_transaction_positional(fc::rpc
   return fc::variant(result);
 }
 
+fc::variant CommonApiRpcServer::okcoin_network_broadcast_transaction_positional(fc::rpc::json_connection* json_connection, const fc::variants& parameters)
+{
+  // check all of this method's prerequisites
+  verify_json_connection_is_authenticated(json_connection);
+  //verify_connected_to_network();
+  // done checking prerequisites
+  //std::ofstream out("./broadentry.txt");
+  if (parameters.size() <= 0)
+     FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 1 (transaction_to_broadcast)");
+
+  TiValue::wallet::WalletTransactionEntry entry = parameters[0].as<TiValue::wallet::WalletTransactionEntry>();
+
+  //if (out.is_open())
+  //{
+  //  out << fc::json::to_pretty_string(entry) << "\n";
+  //  out.close();
+  //}
+  TiValue::blockchain::SignedTransaction transaction_to_broadcast = entry.trx;
+
+  TiValue::blockchain::TransactionIdType result = get_client()->network_broadcast_transaction(transaction_to_broadcast);
+  return fc::variant(result);
+}
+
 fc::variant CommonApiRpcServer::network_broadcast_transaction_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters)
 {
   // check all of this method's prerequisites
@@ -1354,6 +1377,21 @@ fc::variant CommonApiRpcServer::network_broadcast_transaction_named(fc::rpc::jso
 
   if (!parameters.contains("transaction_to_broadcast"))
     FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'transaction_to_broadcast'");
+  TiValue::blockchain::SignedTransaction transaction_to_broadcast = parameters["transaction_to_broadcast"].as<TiValue::blockchain::SignedTransaction>();
+
+  TiValue::blockchain::TransactionIdType result = get_client()->network_broadcast_transaction(transaction_to_broadcast);
+  return fc::variant(result);
+}
+
+fc::variant CommonApiRpcServer::okcoin_network_broadcast_transaction_named(fc::rpc::json_connection* json_connection, const fc::variant_object& parameters)
+{
+  // check all of this method's prerequisites
+  verify_json_connection_is_authenticated(json_connection);
+  verify_connected_to_network();
+  // done checking prerequisites
+
+  if (!parameters.contains("transaction_to_broadcast"))
+   FC_THROW_EXCEPTION(fc::invalid_arg_exception, "missing required parameter 'transaction_to_broadcast'");
   TiValue::blockchain::SignedTransaction transaction_to_broadcast = parameters["transaction_to_broadcast"].as<TiValue::blockchain::SignedTransaction>();
 
   TiValue::blockchain::TransactionIdType result = get_client()->network_broadcast_transaction(transaction_to_broadcast);
@@ -8629,6 +8667,14 @@ void CommonApiRpcServer::register_CommonApi_methods(const fc::rpc::json_connecti
                                         this, capture_con, _1);
   json_connection->add_named_param_method("network_broadcast_transaction", bound_named_method);
 
+  // register method okcoin_network_broadcast_transaction
+  bound_positional_method = boost::bind(&CommonApiRpcServer::okcoin_network_broadcast_transaction_positional,
+                                        this, capture_con, _1);
+  json_connection->add_method("okcoin_network_broadcast_transaction", bound_positional_method);
+  bound_named_method = boost::bind(&CommonApiRpcServer::okcoin_network_broadcast_transaction_named,
+                                   this, capture_con, _1);
+  json_connection->add_named_param_method("okcoin_network_broadcast_transaction", bound_named_method);
+
   // register method network_set_advanced_node_parameters
   bound_positional_method = boost::bind(&CommonApiRpcServer::network_set_advanced_node_parameters_positional, 
                                         this, capture_con, _1);
@@ -11040,6 +11086,20 @@ void CommonApiRpcServer::register_CommonApi_method_metadata()
       /* detailed description */ "Broadcast a previously-created signed transaction to the network\n\nParameters:\n  transaction_to_broadcast (signed_transaction, required): The transaction to broadcast to the network\n\nReturns:\n  transaction_id\n",
       /* aliases */ {}, false};
     store_method_metadata(network_broadcast_transaction_method_metadata);
+  }
+
+  {
+    // register method okcoin_network_broadcast_transaction
+    TiValue::api::MethodData okcoin_network_broadcast_transaction_method_metadata{"okcoin_network_broadcast_transaction", nullptr,
+            /* description */ "Broadcast a previously-created signed transaction to the network",
+            /* returns */ "transaction_id",
+            /* params: */ {
+                                                                                   {"transaction_to_broadcast", "signed_transaction", TiValue::api::required_positional, fc::ovariant()}
+                                                                           },
+            /* prerequisites */ (TiValue::api::MethodPrerequisites) 9,
+            /* detailed description */ "Broadcast a previously-created signed transaction to the network\n\nParameters:\n  transaction_to_broadcast (signed_transaction, required): The transaction to broadcast to the network\n\nReturns:\n  transaction_id\n",
+            /* aliases */ {}, false};
+    store_method_metadata(okcoin_network_broadcast_transaction_method_metadata);
   }
 
   {
@@ -13971,6 +14031,8 @@ fc::variant CommonApiRpcServer::direct_invoke_positional_method(const std::strin
     return network_get_peer_info_positional(nullptr, parameters);
   if (method_name == "network_broadcast_transaction")
     return network_broadcast_transaction_positional(nullptr, parameters);
+  if (method_name == "okcoin_network_broadcast_transaction")
+    return okcoin_network_broadcast_transaction_positional(nullptr, parameters);
   if (method_name == "network_set_advanced_node_parameters")
     return network_set_advanced_node_parameters_positional(nullptr, parameters);
   if (method_name == "network_get_advanced_node_parameters")
