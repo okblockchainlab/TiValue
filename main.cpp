@@ -30,16 +30,56 @@ static TiValue::client::ClientPtr client = NULL;
 
 #if 1
 int main(int argc, char** argv) {
+    vector<string> configs;
+    vector<string> cmds;
+    vector<string> *configsOrcmds = NULL;
+    configs.push_back(argv[0]);
+
+    string tmpcmd = "";
+    for (int i = 1; i < argc; i++)
+    {
+        if (0 == strcmp(argv[i], "init")) {
+            configsOrcmds = &configs;
+            continue;
+        } else if (0 == strcmp(argv[i], "cmd")) {
+            if (tmpcmd != "") {
+                configsOrcmds->push_back(tmpcmd);
+                tmpcmd = "";
+            }
+            configsOrcmds = &cmds;
+            continue;
+        }
+        if (configsOrcmds == &configs) {
+            configsOrcmds->push_back(argv[i]);
+        } else if (configsOrcmds == &cmds){
+            tmpcmd += argv[i];
+            tmpcmd += " ";
+        }
+    }
+
+    if (tmpcmd != "") {
+        cmds.push_back(tmpcmd);
+    }
+
+    char* okcoin_argv[configs.size()];
+    int okcoin_argc = 0;
+    for (auto config : configs)
+    {
+        //std::cout << config << std::endl;
+        okcoin_argv[okcoin_argc] = const_cast<char *> (config.c_str());
+        okcoin_argc++;
+    }
+
     try {
         client = std::make_shared<TiValue::client::Client>("bitshares_client");
-        client->configure_from_command_line(argc, argv);
+        client->configure_from_command_line(okcoin_argc, okcoin_argv);
     }
     catch (const fc::exception &e) {
         std::cerr << "------------ error --------------\n"
                   << e.to_detail_string() << "\n";
         wlog("${e}", ("e", e.to_detail_string()));
     }
-
+#if 0
     string commandline = "wallet_open meng";
     client->execute(commandline);
     commandline = "wallet_unlock 9999 iou910302";
@@ -49,10 +89,20 @@ int main(int argc, char** argv) {
     fc::variant result =  client->get_result();
     commandline = "okcoin_network_broadcast_transaction ";
     commandline += result.as<string>();
+#endif
+    for (auto cmd : cmds) {
+        //std::cout << cmd << std::endl;
+        client->execute(cmd);
+        fc::variant result = client->get_result();
+        std::cout << result.as<string>() << std::endl;
+    }
 
-    std::cout << commandline << std::endl;
-    client->execute(commandline);
-    TiValue::blockchain::shutdown_ntp_time();
+
+    //TiValue::blockchain::shutdown_ntp_time();
+
+    //ilog("Leaving main()");
+    //fc::configure_logging(fc::logging_config::default_config());
+    return 0;
 
 }
 

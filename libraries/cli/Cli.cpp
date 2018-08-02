@@ -325,7 +325,7 @@ namespace TiValue {
                         {
                             fc::variant result = _self->execute_interactive_command(command, arguments);
                             _result = fc::json::to_string(result);
-                            _self->format_and_print_result(command, arguments, result);
+                            //_self->format_and_print_result(command, arguments, result);
                         }
                         catch (const TiValue::cli::abort_cli_command&)
                         {

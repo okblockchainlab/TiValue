@@ -8,7 +8,7 @@ namespace TiValue {
         FC_DECLARE_EXCEPTION(wallet_exception, 20000, "wallet error");
         FC_DECLARE_DERIVED_EXCEPTION(invalid_password, TiValue::wallet::wallet_exception, 20001, "invalid password");
         FC_DECLARE_DERIVED_EXCEPTION(wallet_locked, TiValue::wallet::wallet_exception, 20002, "wallet locked");
-        FC_DECLARE_DERIVED_EXCEPTION(wallet_already_exists, TiValue::wallet::wallet_exception, 20003, "wallet already exists");
+        FC_DECLARE_DERIVED_EXCEPTION(wallet_already_exists, TiValue::wallet::wallet_exception, 20003, "okcoin_fail wallet already exists");
         FC_DECLARE_DERIVED_EXCEPTION(no_such_wallet, TiValue::wallet::wallet_exception, 20004, "wallet does not exist");
         FC_DECLARE_DERIVED_EXCEPTION(unknown_receive_account, TiValue::wallet::wallet_exception, 20005, "unknown receive account");
         FC_DECLARE_DERIVED_EXCEPTION(unknown_account, TiValue::wallet::wallet_exception, 20006, "unknown account");
